@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Welcome to Phoenix!"
-date:   2019-10-10 00:00:00 +0300
+date:   2019-10-10 00:02:00 +0300
 categories: reverse-engineering binary-exploitation exploit-education exploit-education-phoenix
 ---
 Phoenix is a virtual machine that can be obtained from [exploit.education][exploit-education]. It provides an educational environment so that one can practice on their skills. For additional details, visit the website.
