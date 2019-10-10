@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Welcome to Phoenix!"
+title:  "Phoenix Stack Zero"
 date:   2019-10-09 22:00:00 +0300
 categories: reverse-engineering binary-exploitation exploit-education exploit-education-phoenix
 ---
@@ -218,7 +218,15 @@ oeax = 0xffffffff
 0xff8c809c  0x41414141                                   AAAA
 {% endhighlight %}
 
-As shown above, the value of `var_ch` is indeed overwritten. 
+As shown above, the value of `var_ch` is indeed overwritten.
+
+{% highlight plaintext %}
+> dc
+Well done, the 'changeme' variable has been changed!
+{% endhighlight %}
+
+## Conclusion
+The binary was not compiled with the necessary features that would otherwise prevent stack-based buffer overflows and contains a call to `gets`, which does not account the size of bytes to be read from STDIN. As such, one needs to account the size of the buffer and simply input more bytes than it can actually hold so that the stack overflows.
 
 [exploit-education]: https://exploit.education/downloads/
 [rabin2-docs]: https://r2wiki.readthedocs.io/en/latest/tools/rabin2/
