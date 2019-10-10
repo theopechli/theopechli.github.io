@@ -1,8 +1,8 @@
 # Site settings
-title: RE:stuff
+title: RE:code
 #email: your-email@example.com
 description: >-
-  Welcome, to a stunningly boring and unoriginal personal blog
+  Welcome to a stunningly boring and unoriginal personal blog
   primarily about reverse code engineering and binary exploitation.
 baseurl: ""
 url: ""
