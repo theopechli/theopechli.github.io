@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Phoenix Stack Zero"
-date:   2019-10-09 22:00:00 +0300
 categories: exploit-education phoenix
 ---
 Phoenix is a virtual machine that can be obtained from [exploit.education][exploit-education]. It provides an educational environment so that one can practice on their skills. For additional details, visit the website.
