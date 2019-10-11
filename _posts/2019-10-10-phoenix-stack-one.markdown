@@ -43,7 +43,7 @@ subsys   linux
 va       true
 {% endhighlight %}
 
-So as to avoid repetition, the information about the binary is almost identical to that of the previous level. To sum up, this is a 32-bit ELF Linux with no protection against stack-based buffer overflows, among others.
+So as to avoid repetition, the information about the binary is almost identical to that of the previous level. To sum up, this is a 32-bit Linux ELF with no protection against stack-based buffer overflows, among others.
 
 Time to disassemble the binary with `radare2`.
 
@@ -220,7 +220,7 @@ Below is the output of `agf`, which outputs the basic blocks function graph.
 
 Unlike the previous level, the input is not read from STDIN, but, rather, is passed as an argument to the binary. Also, the `gets` call is replaced by `strcpy`, which also allows stack-based buffer overflows considering that it does not restrict the size of bytes to be copied.
 
-The buffer's size is still 64 bytes and we need to overflow the stack, so that the value of the local variable `var_ch` is overwritten with `0x496c5962`.
+The buffer's size is still 64 bytes and we need to overflow the stack so that the value of the local variable `var_ch` is overwritten with `0x496c5962`.
 
 Here follows a `python3` script to create the exploit:
 
