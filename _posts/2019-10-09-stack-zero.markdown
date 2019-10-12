@@ -216,16 +216,17 @@ Before opening the binary in debugger mode using `radare2`, a `rarun2` profile i
 
 {% highlight shell %}
 #!/usr/bin/env rarun2
-stdio=/dev/pts/0    # Replace `/dev/pts/0` with the output of the command `tty`.
-stdin=./pattern     # Replace `./pattern` with the full path to the file that
-                    # contains the input to be read from the binary.
+stdio=/dev/pts/0
+stdin=./pattern
 {% endhighlight %}
+
+*Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
 
 One more thing that is essential is a file that contains the input. For that, python3 is going to be used.
 
 {% highlight python %}
 #!/usr/bin/env python3
-print("X"*64+"AAAA")
+print("X"*64 + "AAAA")
 {% endhighlight %}
 
 {% highlight shell %}
