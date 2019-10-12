@@ -1,6 +1,7 @@
 ---
 layout: post
-title:  "Phoenix Stack One"
+title:  "Phoenix x86 Stack One"
+date: "2019-10-10 15:00:00 +0300"
 categories: exploit-education phoenix x86
 ---
 
