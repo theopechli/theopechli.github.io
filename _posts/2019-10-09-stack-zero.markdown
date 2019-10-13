@@ -236,7 +236,7 @@ $ ./myScript.py > pattern
 Now, the binary can be debugged as follows:
 
 {% highlight shell %}
-$ r2 -d /opt/phoenix/i486/stack-zero -e dbg.profile=myProfile.rr2
+$ r2 -d /opt/phoenix/i486/stack-zero -r myProfile.rr2
 {% endhighlight %}
 
 *Note that when debugging with radare2, the visual panels are really awesome! They can be accessed with `v!` or `V!`.*

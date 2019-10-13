@@ -218,7 +218,15 @@ $ ./myScript.py > pattern
 {% endhighlight %}
 
 {% highlight shell %}
-$ r2 -d /opt/phoenix/i486/stack-three -e dbg.profile=myProfile.rr2
+#!/usr/bin/env rarun2
+stdio=/dev/pts/0
+stdin=./pattern
+{% endhighlight %}
+
+*Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
+
+{% highlight shell %}
+$ r2 -d /opt/phoenix/i486/stack-three -r myProfile.rr2
 {% endhighlight %}
 
 {% highlight nasm %}
