@@ -135,7 +135,7 @@ stdin=./pattern
 
 *Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
 
-To overwrite the return address, the input needs to have 136 bytes to fill the buffer, 4 more bytes to override the previous stack frames pointer and, lastly, 4 more bytes to overwrite the return address.
+To overwrite the return address, the input needs to have 136 bytes to fill the buffer, 4 more bytes to override the previous stack frame's pointer and, lastly, 4 more bytes to overwrite the return address.
 
 {% highlight python %}
 #!/usr/bin/env python3
