@@ -230,13 +230,13 @@ print("X"*64 + "AAAA")
 {% endhighlight %}
 
 {% highlight shell %}
-$ ./myScript.py > pattern
+$ ./theScript.py > pattern
 {% endhighlight %}
 
 Now, the binary can be debugged as follows:
 
 {% highlight shell %}
-$ r2 -d /opt/phoenix/i486/stack-zero -r myProfile.rr2
+$ r2 -d /opt/phoenix/i486/stack-zero -r theProfile.rr2
 {% endhighlight %}
 
 *Note that when debugging with radare2, the visual panels are really awesome! They can be accessed with `v!` or `V!`.*

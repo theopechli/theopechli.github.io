@@ -233,7 +233,7 @@ os.write(1, b'\x58'*64 + b'\x62\x59\x6c\x49')
 {% endhighlight %}
 
 {% highlight shell %}
-$ ./myScript.py > pattern
+$ ./theScript.py > pattern
 {% endhighlight %}
 
 Now, the binary can be debugged as follows:

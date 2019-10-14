@@ -148,7 +148,7 @@ stdin=./pattern
 *Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
 
 {% highlight shell %}
-$ r2 -d /opt/phoenix/i486/stack-four -r myProfile.rr2
+$ r2 -d /opt/phoenix/i486/stack-four -r theProfile.rr2
 {% endhighlight %}
 
 {% highlight nasm %}
@@ -175,8 +175,8 @@ os.write(1, b'\x58'*80 + b'\xe5\x84\x04\x08')
 {% endhighlight %}
 
 {% highlight shell %}
-$ ./stack-zero.py > pattern 
-$ r2 -d /opt/phoenix/i486/stack-four -r myProfile.rr2
+$ ./theScript.py > pattern
+$ r2 -d /opt/phoenix/i486/stack-four -r theProfile.rr2
 {% endhighlight %}
 
 {% highlight nasm %}

