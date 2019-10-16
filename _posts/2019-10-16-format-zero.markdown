@@ -231,12 +231,12 @@ Cannot analyze at 0x08048620
                                                        `-----------------------------------'
 {% endhighlight %}
 
-Disassembling the binary gives us the following key takeaways:
-* There is a call to `fgets` that saves the input which is read from *STDIN* to a local variable `var_3ch` and restricts the size to 15 bytes.
-* There is a call to `sprintf` that takes `var_3ch` as a format string and sends the formatted output to another local variable `var_2ch`.
+Here are the key takeaways by disassembling the binary:
+* There is a call to `fgets` that saves the input, which is read from *STDIN*, to a local variable, `var_3ch`, and restricts the size to 15 bytes.
+* There is a call to `sprintf` that takes `var_3ch` as a format string and sends the formatted output to another local variable, `var_2ch`.
 * The objective is to overwrite the local variable `var_ch`.
 
-As can be seen from the above info, the variable `var_3ch` has a size of 16 bytes considering that the next variable on the stack is `var_2ch` and `0x3c-0x2c=0x10`. The same applies to `var_2ch`, `0x2c-0xc=0x20` which is 32 bytes.
+As can be seen from the above info, the variable `var_3ch` has a size of 16 bytes, considering that the next variable on the stack is `var_2ch` and `0x3c-0x2c=0x10`. The same applies to `var_2ch`, `0x2c-0xc=0x20` which is 32 bytes.
 
 In order to overwrite `var_ch`, `var_2ch` needs to be overflown. To do that, one can simply use the `%x` or `%X` specifier. The aforementioned specifier is used to output unsigned hexadecimal integers. In this case, the output will be sent to `var_2ch` and to overflow it the amount of the specifiers needs to be more than 32. Note that `fgets` restricts the size to 15 bytes and to circumvent that, one can append `32` right after the percentage.
 
@@ -273,4 +273,4 @@ Well done, the 'changeme' variable has been changed!
 {% endhighlight %}
 
 ## Conclusion
-In this level the user can control the format string of `sprintf` and by having that control, it could lead to stack-based buffer overflow.
+In this level the user can control the format string of `sprintf` and, by having that control, it could lead to stack-based buffer overflow.
