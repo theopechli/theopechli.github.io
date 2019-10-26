@@ -276,7 +276,7 @@ exit(0 <no return ...>
 
 *Note the last 4 bytes at the line that starts with `printf`.*
 
-Afterwards, the first 4 bytes are replaced with the address of `obj.changeme`, the last `%x` is replaced with `%n` and the one before that is replaced with `%8x`.
+Afterwards, the first 4 bytes are replaced with the address of `obj.changeme`, the last `%x` is replaced with `%n` and the one before that is replaced with `%8x`. In order to write 4 bytes the `%x` specifier must be `%8x`, which will pad the output of `%x` to 8 characters (i.e. 4 bytes).
 
 The address of `obj.changeme` can be obtained as follows:
 
