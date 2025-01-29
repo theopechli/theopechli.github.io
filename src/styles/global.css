@@ -1,0 +1,310 @@
+/*
+  The CSS in this style tag is based off of Bear Blog's default CSS.
+  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
+  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
+ */
+
+:root {
+	--bg-main-dark: #0d0e1c;
+	--bg-dim-dark: #2c3045;
+	--bg-button-active-dark: #4a4f69;
+	--bg-button-inactive-dark: #1d2235;
+	--bg-hover-dark: #45605e;
+	--bg-region-dark: #555a66;
+	--fg-main-dark: #ffffff;
+	--fg-dim-dark: #989898;
+	--fg-text-active-dark: #ffffff;
+	--fg-text-inactive-dark: #989898;
+	--fg-link-dark: #79a8ff;
+	--fg-link-visited-dark: #feacd0;
+	--fg-region-dark: #ffffff;
+	--border-dark: #61647a;
+	--border-active-dark: #979797;
+	--border-inactive-dark: #606270;
+
+	--bg-main-light: #fbf7f0;
+	--bg-dim-light: #e0d4ce;
+	--bg-button-active-light: #c9b9b0;
+	--bg-button-inactive-light: #efe9dd;
+	--bg-hover-light: #b2e4dc;
+	--bg-region-light: #c2bcb5;
+	--fg-main-light: #000000;
+	--fg-dim-light: #595959;
+	--fg-text-active-light: #000000;
+	--fg-text-inactive-light: #595959;
+	--fg-link-light: #3548cf;
+	--fg-link-visited-light: #721045;
+	--fg-region-light: #000000;
+	--border-light: #9f9690;
+	--border-active-light: #545454;
+	--border-inactive-light: #a59a94;
+}
+
+@font-face {
+	font-family: 'Inter';
+	src: url('/fonts/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Inter Italic';
+	src: url('/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/fonts/Fira_Code/FiraCode-VariableFont_wght.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+:root {
+	--bg-main: light-dark(var(--bg-main-light), var(--bg-main-dark));
+	--bg-dim: light-dark(var(--bg-dim-light), var(--bg-dim-dark));
+	--bg-button-active: light-dark(var(--bg-button-active-light), var(--bg-button-active-dark));
+	--bg-button-inactive: light-dark(var(--bg-button-inactive-light), var(--bg-button-inactive-dark));
+	--bg-hover: light-dark(var(--bg-hover-light), var(--bg-hover-dark));
+	--bg-region: light-dark(var(--bg-region-light), var(--bg-region-dark));
+	--fg-main: light-dark(var(--fg-main-light), var(--fg-main-dark));
+	--fg-dim: light-dark(var(--fg-dim-light), var(--fg-dim-dark));
+	--fg-text-active: light-dark(var(--fg-text-active-light), var(--fg-text-active-dark));
+	--fg-text-inactive: light-dark(var(--fg-text-inactive-light), var(--fg-text-inactive-dark));
+	--fg-link: light-dark(var(--fg-link-light), var(--fg-link-dark));
+	--fg-link-visited: light-dark(var(--fg-link-visited-light), var(--fg-link-visited-dark));
+	--fg-region: light-dark(var(--fg-region-light), var(--fg-region-dark));
+	--border: light-dark(var(--border-light), var(--border-dark));
+	--border-active: light-dark(var(--border-active-light), var(--border-active-dark));
+	--border-inactive: light-dark(var(--border-inactive-light), var(--border-inactive-dark));
+	--box-shadow:
+		0 2px 6px color-mix(in srgb, var(--fg-dim) 25%, transparent),
+		0 8px 24px color-mix(in srgb, var(--fg-dim) 33%, transparent),
+		0 16px 32px color-mix(in srgb, var(--fg-dim) 33%, transparent);
+}
+
+::selection {
+	background-color: var(--bg-region);
+	color: var(--fg-region);
+}
+
+html {
+	color-scheme: light dark;
+}
+
+body {
+	font-family: 'Inter', sans-serif;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+	background-color: var(--bg-main);
+	background-size: 100% 600px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	color: var(--fg-main);
+	font-size: 20px;
+	line-height: 1.7;
+}
+
+main {
+	width: 720px;
+	max-width: calc(100% - 2em);
+	margin: auto;
+	padding: 3em 1em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0 0 0.5rem 0;
+	color: var(--fg-main);
+	line-height: 1.2;
+}
+
+h1 {
+	font-size: 3.052em;
+}
+
+h2 {
+	font-size: 2.441em;
+}
+
+h3 {
+	font-size: 1.953em;
+}
+
+h4 {
+	font-size: 1.563em;
+}
+
+h5 {
+	font-size: 1.25em;
+}
+
+strong,
+b {
+	font-weight: 700;
+}
+
+a {
+	color: var(--fg-link);
+	text-decoration: none;
+}
+
+a:visited {
+	color: var(--fg-link-visited);
+}
+
+a:hover {
+	text-decoration: underline;
+	text-decoration-thickness: .125em;
+	text-underline-offset: 3px;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+.prose p {
+	margin-bottom: 2em;
+}
+
+textarea {
+	width: 100%;
+	font-size: 16px;
+}
+
+input {
+	font-size: 16px;
+}
+
+button {
+	font-size: 16px;
+	padding: 4px 12px;
+	background:
+		linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.13)),
+		radial-gradient(90% 7% at 50% 8%, rgba(255, 255, 255, 0.47) 25%, rgba(255, 255, 255, 0) 50%),
+		var(--bg-button-inactive);
+	color: var(--fg-text-inactive);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--fg-main) 90%, transparent);
+	border: 2px solid transparent;
+	border-radius: 0.4em;
+	cursor: pointer;
+	text-decoration: none;
+	transition: 0.3s ease;
+}
+
+button:hover {
+	color: var(--fg-text-active);
+	background-color: var(--bg-hover);
+	border-color: var(--border-inactive);
+	transform: scale(0.98, 0.98);
+}
+
+button[aria-pressed="true"] {
+	color: var(--fg-text-active);
+	background:
+		linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.13)),
+		radial-gradient(90% 7% at 50% 8%, rgba(255, 255, 255, 0.47) 25%, rgba(255, 255, 255, 0) 50%),
+		var(--bg-button-active);
+	transform: scale(0.9, 0.9);
+}
+
+table {
+	width: 100%;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+code {
+	font-family: 'Fira Code', monospace;
+	padding: 2px 5px;
+	background-color: var(--bg-dim);
+	border-radius: 2px;
+}
+
+pre {
+	padding: 1.5em;
+	border-radius: 8px;
+}
+
+pre > code {
+	all: unset;
+}
+
+blockquote {
+	border-left: 4px solid var(--border);
+	padding: 0 0 0 20px;
+	margin: 0px;
+	font-size: 1.333em;
+}
+
+hr {
+	border: none;
+	border-top: 1px solid var(--border);
+}
+
+em {
+	font-family: "Inter Italic", sans-serif;
+	font-weight: normal;
+	font-style: italic;
+}
+
+strong em {
+	font-family: "Inter Italic", sans-serif;
+	font-weight: bold;
+	font-style: normal;
+}
+
+.astro-code,
+.astro-code span {
+	color: light-dark(var(--shiki-light), var(--shiki-dark)) !important;
+	background-color: var(--bg-dim) !important;
+	font-style: light-dark(var(--shiki-light-font-style), var(--shiki-dark-font-style)) !important;
+	font-weight: light-dark(var(--shiki-light-font-weight), var(--shiki-dark-font-weight)) !important;
+	text-decoration: light-dark(var(--shiki-light-text-decoration), var(--shiki-dark-text-decoration)) !important;
+}
+
+@media (max-width: 720px) {
+	body {
+		font-size: 18px;
+	}
+
+	main {
+		padding: 1em;
+	}
+}
+
+.sr-only {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
+	clip: rect(1px 1px 1px 1px);
+	/* maybe deprecated but we need to support legacy browsers */
+	clip: rect(1px, 1px, 1px, 1px);
+	/* modern browsers, clip-path works inwards from each corner */
+	clip-path: inset(50%);
+	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
+	white-space: nowrap;
+}
+
+.anchor {
+	display: flex;
+	gap: 8px;
+}
