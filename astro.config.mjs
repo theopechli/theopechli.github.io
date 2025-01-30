@@ -10,9 +10,6 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 export default defineConfig({
 	site: 'https://theopechli.com',
 	integrations: [mdx(), sitemap()],
-	redirects: {
-		'/blog': '/blog/page/1'
-	},
 	markdown: {
 		shikiConfig: {
 			themes: {

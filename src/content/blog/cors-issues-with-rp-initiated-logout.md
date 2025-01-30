@@ -39,7 +39,7 @@ To accomplish that, I simply modified the redirect strategy of the logout succes
 
 The following code is almost the same as [this one from the Spring documentaion](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/logout.html#configure-client-initiated-oidc-logout).
 
-```java {hl_lines=[31, "33-35"]}
+```java
 @Configuration
 @EnableWebSecurity
 public class OAuth2LoginSecurityConfig {
@@ -83,7 +83,7 @@ public class OAuth2LoginSecurityConfig {
 
 In the frontend application, when the client makes a `POST` request to the logout endpoint, I check the response status. If it is `202`, the client will navigate to Keycloak in order to log out, and then will be redirected to the frontend application.
 
-```js {hl_lines=["9-10", 12]}
+```js
 async function logout() {
   const url = "http://example.com/logout";
   try {

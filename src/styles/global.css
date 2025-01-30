@@ -92,12 +92,18 @@
 	color: var(--fg-region);
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 html {
 	color-scheme: light dark;
 }
 
 body {
-	font-family: 'Inter', sans-serif;
+	font-family: Inter, Arial, sans-serif;
+	font-size: 20px;
+	line-height: 1.7;
 	margin: 0;
 	padding: 0;
 	text-align: left;
@@ -106,8 +112,6 @@ body {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: var(--fg-main);
-	font-size: 20px;
-	line-height: 1.7;
 }
 
 main {
@@ -228,7 +232,7 @@ img {
 }
 
 code {
-	font-family: 'Fira Code', monospace;
+	font-family: "Fira Code", "IBM Plex Mono", "JetBrains Mono", "Cascadia Code", monospace;
 	padding: 2px 5px;
 	background-color: var(--bg-dim);
 	border-radius: 2px;
@@ -237,10 +241,6 @@ code {
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
-}
-
-pre > code {
-	all: unset;
 }
 
 blockquote {
@@ -304,7 +304,6 @@ strong em {
 	white-space: nowrap;
 }
 
-.anchor {
-	display: flex;
-	gap: 8px;
+.anchor-link {
+	padding-right: 8px;
 }
