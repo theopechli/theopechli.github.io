@@ -6,6 +6,26 @@ import Layout from '../layouts/BaseLayout.astro';
 	title="theopechli's projects"
 	description="Some of theopechli's projects."
 >
-	<h1>Projects</h1>
-	<p>WIP</p>
+	<h1 class="title">Projects</h1>
+
+	<div class="projects">
+		<div class="project">
+			<h3><a href="https://github.com/theopechli/SDL_shadercross_Odin">SDL_shadercross_Odin</a></h3>
+			<p>
+				<a href="https://odin-lang.org">Odin</a> bindings for <a href="https://github.com/libsdl-org/SDL_shadercross">SDL_shadercross</a>, showcasing both online and offline shader compilation. Online shader compilation is done via the <strong>SDL_shadercross</strong> API, and offline via the <strong>shadercross</strong> binary file.
+			</p>
+		</div>
+	</div>
 </Layout>
+
+<style>
+	.title {
+		padding-bottom: 1em;
+	}
+
+	.projects {
+		display: flex;
+		flex-direction: column;
+		gap: 2em;
+	}
+</style>
