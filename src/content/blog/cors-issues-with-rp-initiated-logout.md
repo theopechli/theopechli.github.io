@@ -37,7 +37,7 @@ If you didn't read the above blog post, the solution was basically to send a `20
 
 To accomplish that, I simply modified the redirect strategy of the logout success handler. Note that after a successful logout, the client will be redirected to the frontend application.
 
-The following code is almost the same as [this one from the Spring documentaion](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/logout.html#configure-client-initiated-oidc-logout).
+The following code is almost the same as [this one from the Spring documentation](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/logout.html#configure-client-initiated-oidc-logout).
 
 ```java
 @Configuration
