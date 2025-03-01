@@ -1,7 +1,7 @@
 ---
 import BaseHead from '../../../components/BaseHead.astro';
 import Header from '../../../components/Header.astro';
-import Footer from '../../../components/Footer.astro';
+import InfoRuler from '../../../components/InfoRuler.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../../components/FormattedDate.astro';
@@ -24,6 +24,10 @@ const { page } = Astro.props;
 		<style>
 			main {
 				width: 960px;
+			}
+
+			a:hover {
+				text-decoration: none;
 			}
 
 			ul {
@@ -53,6 +57,10 @@ const { page } = Astro.props;
 				font-size: 2.369rem;
 			}
 
+			ul li:first-child a:hover h4 {
+				text-underline-offset: 12px;
+			}
+
 			ul li img {
 				margin-bottom: 0.5rem;
 				border-radius: 12px;
@@ -70,12 +78,20 @@ const { page } = Astro.props;
 
 			.date {
 				margin: 0;
+				padding: 0.5em 0;
 				color: var(--fg-dim);
+			}
+
+			ul li a h4 {
+				line-height: 1.4;
 			}
 
 			ul li a:hover h4,
 			ul li a:hover .date {
 				color: var(--fg-link);
+				text-decoration: underline;
+				text-decoration-thickness: .125em;
+				text-underline-offset: 8px;
 			}
 
 			ul li a:visited h4,
@@ -98,24 +114,28 @@ const { page } = Astro.props;
 			}
 
 			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
 				ul li {
 					width: 100%;
 					text-align: center;
 				}
+
 				ul li:first-child {
 					margin-bottom: 0;
 				}
+
 				ul li:first-child .title {
 					font-size: 1.563em;
+				}
+
+				ul li:first-child a:hover h4 {
+					text-underline-offset: 8px;
 				}
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
+		<InfoRuler />
 		<main>
 			<section>
 				<ul>
@@ -145,6 +165,5 @@ const { page } = Astro.props;
 				</div>
 			</section>
 		</main>
-		<Footer />
 	</body>
 </html>

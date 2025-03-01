@@ -1,87 +1,16 @@
 ---
 import HeaderLink from './HeaderLink.astro';
-import { SITE_TITLE } from '../consts';
 ---
-
-<script>
-	const html = document.querySelector('html');
-
-	function switchAuto() {
-		html.style.setProperty("color-scheme", "light dark");
-		sessionStorage.removeItem("mode");
-		autoSwitch.setAttribute("aria-pressed","true");
-		lightSwitch.setAttribute("aria-pressed","false");
-		darkSwitch.setAttribute("aria-pressed","false");
-	}
-
-	function switchLight() {
-		html.style.setProperty("color-scheme", "light");
-		sessionStorage.setItem("mode", "light");
-		autoSwitch.setAttribute("aria-pressed","false");
-		lightSwitch.setAttribute("aria-pressed","true");
-		darkSwitch.setAttribute("aria-pressed","false");
-	}
-
-	function switchDark() {
-		html.style.setProperty("color-scheme", "dark");
-		sessionStorage.setItem("mode", "dark");
-		autoSwitch.setAttribute("aria-pressed","false");
-		lightSwitch.setAttribute("aria-pressed","false");
-		darkSwitch.setAttribute("aria-pressed","true");
-	}
-
-	document.addEventListener('DOMContentLoaded', () => {
-		const mode = sessionStorage.getItem("mode");
-
-		if (mode === "light") switchLight();
-		if (mode === "dark") switchDark();
-	});
-
-	document.addEventListener('astro:after-swap', () => {
-		const mode = sessionStorage.getItem("mode");
-
-		if (mode === "light") switchLight();
-		if (mode === "dark") switchDark();
-	});
-
-	document.addEventListener('astro:page-load', () => {
-		const mode = sessionStorage.getItem("mode");
-
-		if (mode === "light") switchLight();
-		if (mode === "dark") switchDark();
-
-		const autoSwitch = document.getElementById("autoSwitch");
-		autoSwitch.addEventListener("click", (event) => {
-			switchAuto();
-		});
-
-		const lightSwitch = document.getElementById("lightSwitch");
-		lightSwitch.addEventListener("click", (event) => {
-			switchLight();
-		});
-
-		const darkSwitch = document.getElementById("darkSwitch");
-		darkSwitch.addEventListener("click", (event) => {
-			switchDark();
-		});
-	});
-</script>
 
 <header>
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<h1><a href="/">Theo G. Pechli</a></h1>
 
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/blog">Blog</HeaderLink>
 			<HeaderLink href="/projects">Projects</HeaderLink>
 			<HeaderLink href="/resume">Résumé</HeaderLink>
-		</div>
-
-		<div class="theme-buttons">
-			<button id="autoSwitch" type="button">Auto</button>
-			<button id="lightSwitch" type="button">Light</button>
-			<button id="darkSwitch" type="button">Dark</button>
 		</div>
 	</nav>
 </header>
@@ -90,55 +19,25 @@ import { SITE_TITLE } from '../consts';
 	header {
 		margin: 0;
 		padding: 0 1em;
-		background: var(--bg-dim);
-		box-shadow: 0 2px 8px color-mix(in srgb, var(--fg-main) 80%, transparent);
+		background: var(--bg-main);
 	}
 
 	nav {
-		padding: 1em 0.5em;
+		padding: 2em;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: space-around;
+		gap: 1em;
 	}
 
-	nav a {
-		padding: 4px 12px;
-		background:
-			linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.13)),
-			radial-gradient(90% 7% at 50% 8%, rgba(255, 255, 255, 0.47) 25%, rgba(255, 255, 255, 0) 50%),
-			var(--bg-button-inactive);
-		color: var(--fg-text-inactive);
-		box-shadow: 0 2px 8px color-mix(in srgb, var(--fg-main) 90%, transparent);
-		border: 2px solid transparent;
-		border-radius: 0.4em;
-		cursor: pointer;
-		text-decoration: none;
-		transition: 0.3s ease;
-	}
-
-	nav a:hover {
-		color: var(--fg-text-active);
-		background-color: var(--bg-hover);
-		border-color: var(--border-inactive);
-		transform: scale(0.98, 0.98);
-	}
-
-	nav a.active {
-		color: var(--fg-text-active);
-		background:
-			linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.13)),
-			radial-gradient(90% 7% at 50% 8%, rgba(255, 255, 255, 0.47) 25%, rgba(255, 255, 255, 0) 50%),
-			var(--bg-button-active);
-		transform: scale(0.9, 0.9);
-	}
-
-	h2 {
+	h1 {
 		margin: 0;
-		font-size: 1.25em;
+		font-size: 3.702em;
 	}
 
-	h2 a,
-	h2 a.active {
+	h1 a,
+	h1 a.active {
 		text-decoration: none;
 		color: var(--fg-text-active);
 	}
@@ -146,12 +45,7 @@ import { SITE_TITLE } from '../consts';
 	.internal-links {
 		display: flex;
 		flex-direction: row;
-		gap: 0.6em;
-	}
-
-	.theme-buttons {
-		display: flex;
-		flex-direction: row;
+		align-self: center;
 		gap: 0.6em;
 	}
 
