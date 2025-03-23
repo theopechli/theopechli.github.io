@@ -62,7 +62,7 @@ const today = new Date();
 	<div class="info-ruler-top">
 		<div class="wrapper">
 			<div class="theme-buttons">
-				<button id="lightSwitch" type="button">
+				<button id="lightSwitch" type="button" aria-label="Light button switch">
 					<svg height="32" width="32" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
 						 viewBox="0 0 51.492 51.492" xml:space="preserve">
 						<g>
@@ -111,7 +111,7 @@ const today = new Date();
 						</g>
 					</svg>
 				</button>
-				<button id="darkSwitch" type="button">
+				<button id="darkSwitch" type="button" aria-label="Dark button switch">
 					<svg fill="currentColor" viewBox="0 0 32 32" width="26" height="26" version="1.1" xmlns="http://www.w3.org/2000/svg">
 						<g id="SVGRepo_bgCarrier" stroke-width="0"></g>
 						<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -145,9 +145,9 @@ const today = new Date();
 			</div>
 		</div>
 
-		<h6 class="date">
-		  {today.toLocaleString('default', { weekday: 'long' })}, {today.toLocaleString('default', { month: 'long' })} {today.getDay()}, {today.getFullYear()}
-		</h6>
+		<p class="date">
+		  {today.toLocaleString('default', { weekday: 'long' })}, {today.toLocaleString('default', { month: 'long' })} {today.getDate()}, {today.getFullYear()}
+		</p>
 	</div>
 
 	<hr />
@@ -196,7 +196,11 @@ const today = new Date();
 
 	.date {
 		margin: 0;
+		color: var(--fg-main);
 		align-content: center;
+		line-height: 1.2;
+		font-size: 1.1em;
+		font-weight: bold;
 	}
 
 	.social-links {
@@ -207,6 +211,7 @@ const today = new Date();
 	.social-links > a {
 		display: flex;
 		align-items: center;
+		color: var(--fg-main);
 	}
 
 	.copyright {
@@ -217,7 +222,7 @@ const today = new Date();
 
 	@media (max-width: 920px) {
 		.info-ruler {
-			padding: 0 2em 1em 2em;
+			padding: 0 1em 1.5em 1.5em;
 		}
 
 		.info-ruler-top {

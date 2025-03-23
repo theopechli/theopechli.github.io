@@ -1,6 +1,6 @@
 ---
 title: 'Apache Camel failover load balancer with dynamic endpoints'
-description: ''
+description: 'This blog post showcases how to create an Apache Camel route, which load balances a dynamic number of endpoints with failover in Round Robin mode.'
 pubDate: 'Jan 18 2025'
 ---
 
@@ -23,11 +23,11 @@ In order to have dynamic endpoints, the route definition that is demonstrated in
 
 ```java
 from("direct:start")
-    .loadBalance().failover(10, false, true)
-        .to("http:service1")
-        .to("http:service2")
-        .to("http:service3")
-    .end();
+	.loadBalance().failover(10, false, true)
+		.to("http:service1")
+		.to("http:service2")
+		.to("http:service3")
+	.end();
 ```
 
 **Modified:**

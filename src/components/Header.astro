@@ -4,7 +4,7 @@ import HeaderLink from './HeaderLink.astro';
 
 <header>
 	<nav>
-		<h1><a href="/">Theo G. Pechli</a></h1>
+		<h1><a href="/">Theo Pechli</a></h1>
 
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
@@ -34,6 +34,7 @@ import HeaderLink from './HeaderLink.astro';
 	h1 {
 		margin: 0;
 		font-size: 3.702em;
+		text-align: center;
 	}
 
 	h1 a,
@@ -45,6 +46,7 @@ import HeaderLink from './HeaderLink.astro';
 	.internal-links {
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
 		align-self: center;
 		gap: 0.6em;
 	}

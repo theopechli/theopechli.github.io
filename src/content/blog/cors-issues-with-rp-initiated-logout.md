@@ -1,6 +1,6 @@
 ---
 title: 'CORS issues with RP-Initiated Logout'
-description: ''
+description: 'This blog post outlines a CORS related issue with RP-Initiated logout and how one could solve it, albeit naively.'
 pubDate: 'Jan 25 2025'
 ---
 
@@ -85,24 +85,24 @@ In the frontend application, when the client makes a `POST` request to the logou
 
 ```js
 async function logout() {
-  const url = "http://example.com/logout";
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      // ...
-    });
+	const url = "http://example.com/logout";
+	try {
+		const response = await fetch(url, {
+			method: "POST",
+			// ...
+		});
 
-    if (response.status === 202) {
-      const location = response.headers['location'];
-      if (location) {
-        window.location.href = location;
-      } else {
-        throw new Error('Failed to find Location header')
-      }
-    }
-  } catch (error) {
-    console.error(error.message);
-  }
+		if (response.status === 202) {
+			const location = response.headers['location'];
+			if (location) {
+				window.location.href = location;
+			} else {
+				throw new Error('Failed to find Location header')
+			}
+		}
+	} catch (error) {
+		console.error(error.message);
+	}
 }
 ```
 

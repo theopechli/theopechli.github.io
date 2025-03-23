@@ -53,7 +53,7 @@ const { page } = Astro.props;
 				font-size: 2.369rem;
 			}
 
-			ul li:first-child a:hover h4 {
+			ul li:first-child a:hover .title {
 				text-underline-offset: 12px;
 			}
 
@@ -71,6 +71,8 @@ const { page } = Astro.props;
 				margin: 0;
 				color: var(--fg-main);
 				line-height: 1;
+				font-size: 1.563em;
+				font-weight: bold;
 			}
 
 			.date {
@@ -79,19 +81,18 @@ const { page } = Astro.props;
 				color: var(--fg-dim);
 			}
 
-			ul li a h4 {
+			ul li a .title {
 				line-height: 1.4;
 			}
 
-			ul li a:hover h4,
+			ul li a:hover .title,
 			ul li a:hover .date {
-				color: var(--fg-link);
 				text-decoration: underline;
 				text-decoration-thickness: .125em;
 				text-underline-offset: 8px;
 			}
 
-			ul li a:visited h4,
+			ul li a:visited .title,
 			ul li a:visited .date {
 				color: var(--fg-link-visited);
 			}
@@ -103,6 +104,10 @@ const { page } = Astro.props;
 			.pagination {
 				display: flex;
 				justify-content: space-between;
+			}
+
+			.pagination a {
+				color: var(--fg-main);
 			}
 
 			.pagination-left, .pagination-right {
@@ -124,7 +129,7 @@ const { page } = Astro.props;
 					font-size: 1.563em;
 				}
 
-				ul li:first-child a:hover h4 {
+				ul li:first-child a:hover .title {
 					text-underline-offset: 8px;
 				}
 			}
@@ -141,7 +146,7 @@ const { page } = Astro.props;
 							<li>
 								<a href={`/blog/${post.id}/`}>
 									{post.data.heroImage && <Image width={720} height={360} src={post.data.heroImage} alt="" />}
-									<h4 class="title">{post.data.title}</h4>
+									<p class="title">{post.data.title}</p>
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />
 									</p>
